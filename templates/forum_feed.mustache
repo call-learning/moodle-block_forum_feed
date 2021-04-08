@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template block_forum_feed/block
+    @template block_forum_feed/forum_feed
 
     This template renders a simple progress bar.
 
@@ -36,17 +36,30 @@
 <div id="block-forum-feed-{{uniqid}}" class="block-forum-feed block-cards">
     {{#posts}}
         <div class="card box-shadow rounded m-2">
-            <div class="card-body">
-                <h5 class="card-title">
-                    {{userfullname}}&nbsp;{{#str}}in, block_forum_feed{{/str}}
-                    <a class="forum-feed-subject" href="{{subjectlink}}">
-                        {{subject}}
-                    </a>
-                </h5>
-                <p class="card-text">
+            <div class="card-title d-flex flex-row">
+                <div class="m-2">{{{userpicture}}}</div>
+                <div class="flex-column">
+                    <div>
+                        {{userfullname}}&nbsp;{{#str}}in, block_forum_feed{{/str}}
+                        <a class="forum-feed-subject" href="{{subjectlink}}">
+                            {{subject}}
+                        </a>
+                    </div>
+                    <div>
+                        <span class="feed-date">
+                        {{#userdate}} {{timestamp}}, {{#str}} strftimedatetime, core_langconfig {{/str}} {{/userdate}}
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="card-text">
                     {{{message}}}
-                    <a href="{{morelink}}">{{#str}}more, block_forum_feed{{/str}}</a>
-                </p>
+                </div>
+                <div class="align-self-end">
+                    <a href="{{morelink}}" class="pt-2">{{#str}}more, block_forum_feed{{/str}}</a>
+                </div>
             </div>
         </div>
     {{/posts}}

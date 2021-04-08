@@ -33,6 +33,7 @@ use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
+use user_picture;
 
 /**
  * Block forum_feed is defined here.
@@ -45,12 +46,17 @@ class forum_feed implements renderable, templatable {
     /**
      * @var $forumid
      */
-    public $forumid = null;
+    protected $forumid = null;
 
     /**
      * @var $forumposts
      */
-    public $forumposts = [];
+    protected $forumposts = [];
+
+    /**
+     * @var int
+     */
+    protected $maxitemcount = 0;
 
     /**
      * forum_feed constructor.
@@ -62,63 +68,10 @@ class forum_feed implements renderable, templatable {
      * @throws \dml_exception
      */
     public function __construct($forumid, $maxitemcount = 3) {
-        global $DB, $CFG;
+
         $this->forumid = $forumid;
-        require_once($CFG->dirroot . '/mod/forum/lib.php');   // We'll need this.
+        $this->maxitemcount = $maxitemcount;
 
-        $text = '';
-
-        $forum = $DB->get_record('forum', array('id' => $forumid));
-        if (!$forum) {
-            return;
-        }
-        $modinfo = get_fast_modinfo($forum->course);
-        if (empty($modinfo->instances['forum'][$forum->id])) {
-            return '';
-        }
-        $cm = $modinfo->instances['forum'][$forum->id];
-
-        // Check if visible.
-        if ($cm->uservisible) {
-
-            $context = context_module::instance($cm->id);
-
-            /// User must have perms to view discussions in that forum
-            if (has_capability('mod/forum:viewdiscussion', $context)) {
-
-                /// First work out whether we can post to this group and if so, include a link
-                $groupmode = groups_get_activity_groupmode($cm);
-                $currentgroup = groups_get_activity_group($cm, true);
-
-                $sort = forum_get_default_sort_order(false, 'p.modified', 'd', false);
-                if (!$discussions = forum_get_discussions($cm, $sort, true,
-                    -1, $maxitemcount,
-                    false, -1, 0, FORUM_POSTS_ALL_USER_GROUPS)) {
-                    $text .= '(' . get_string('nonews', 'forum') . ')';
-                    $this->content->text = $text;
-                    return $this->content;
-                }
-
-                foreach ($discussions as $discussion) {
-                    $post = new \stdClass();
-                    $post->subject = format_string($discussion->name, true, $forum->course);
-                    $post->subjectlink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
-                        array('d' => $discussion->discussion));
-                    $posttime = $discussion->modified;
-                    if (!empty($CFG->forum_enabletimedposts) && ($discussion->timestart > $posttime)) {
-                        $posttime = $discussion->timestart;
-                    }
-                    $post->userfullname = fullname($discussion);
-                    $post->timestamp = $posttime;
-                    $post->message = format_text($discussion->message, $discussion->messageformat);
-                    $post->morelink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
-                        array('d' => $discussion->discussion),
-                        "p{$discussion->id}");
-                    $this->forumposts[] = $post;
-                }
-
-            }
-        }
     }
 
     /**
@@ -129,8 +82,63 @@ class forum_feed implements renderable, templatable {
      * @throws \coding_exception
      */
     public function export_for_template(renderer_base $renderer) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/mod/forum/lib.php');   // We'll need this.
+        $forumposts = [];
+        $text = '';
+        $forum = $DB->get_record('forum', array('id' => $this->forumid));
+        if ($forum) {
+
+
+            $modinfo = get_fast_modinfo($forum->course);
+            if (!empty($modinfo->instances['forum'][$forum->id])) {
+
+
+                $cm = $modinfo->instances['forum'][$forum->id];
+
+                // Check if visible.
+                if ($cm->uservisible) {
+
+                    $context = context_module::instance($cm->id);
+
+                    /// User must have perms to view discussions in that forum
+                    if (has_capability('mod/forum:viewdiscussion', $context)) {
+
+                        /// First work out whether we can post to this group and if so, include a link
+                        $groupmode = groups_get_activity_groupmode($cm);
+                        $currentgroup = groups_get_activity_group($cm, true);
+                        $sort = forum_get_default_sort_order(false, 'p.modified', 'd', false);
+                        if ($discussions = forum_get_discussions($cm, $sort, true,
+                            -1, $this->maxitemcount,
+                            false, -1, 0, FORUM_POSTS_ALL_USER_GROUPS)) {
+                            foreach ($discussions as $discussion) {
+                                $post = new \stdClass();
+                                $post->subject = format_string($discussion->name, true, $forum->course);
+                                $post->subjectlink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
+                                    array('d' => $discussion->discussion));
+                                $posttime = $discussion->modified;
+                                if (!empty($CFG->forum_enabletimedposts) && ($discussion->timestart > $posttime)) {
+                                    $posttime = $discussion->timestart;
+                                }
+                                $userpicture = new user_picture($discussion);
+                                $userpicture->size = 50;
+                                $post->userpicture = $renderer->render($userpicture);
+                                $post->userfullname = fullname($discussion);
+                                $post->timestamp = $posttime;
+                                $post->message = format_text($discussion->message, $discussion->messageformat);
+                                $post->morelink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
+                                    array('d' => $discussion->discussion),
+                                    "p{$discussion->id}");
+                                $forumposts[] = $post;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         $exportedvalue = [
-            'posts' => array_values($this->forumposts),
+            'posts' => array_values($forumposts),
         ];
         return $exportedvalue;
     }

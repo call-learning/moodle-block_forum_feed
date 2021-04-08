@@ -51,7 +51,7 @@ class block_forum_feed_edit_form extends block_edit_form {
         );
         $mform->setDefault('config_maxfeed', 3);
         $mform->setType('config_maxfeed', PARAM_INT);
-        $sql = "SELECT f.id, ". $DB->sql_concat('f.name', '" / "', 'c.fullname')
+        $sql = "SELECT f.id, ". $DB->sql_concat_join("'/'",['f.name', 'c.fullname'])
             . " FROM {forum} f LEFT JOIN {course} c ON f.course = c.id";
         $forumlist = $DB->get_records_sql_menu($sql);
         $mform->addElement('searchableselector', 'config_forumid',
