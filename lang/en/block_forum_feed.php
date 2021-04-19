@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Forum Feed';
 $string['title'] = 'Title';
 $string['maxfeed'] = 'Max feeds';
+$string['maxtextlength'] = 'Max text length';
 $string['forumid'] = 'Forum Identifier';
 $string['in'] = 'in';
 $string['more'] = 'More...';

@@ -66,7 +66,8 @@ class block_forum_feed extends block_base {
             $this->content->text = $renderer->render(
                 new forum_feed(
                     $this->config->forumid,
-                    $this->config->maxfeed
+                    $this->config->maxfeed,
+                    $this->config->maxtextlength
                 ));
         }
         return $this->content;

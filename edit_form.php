@@ -59,5 +59,11 @@ class block_forum_feed_edit_form extends block_edit_form {
             $forumlist
         );
         $mform->setType('config_forumid', PARAM_INT);
+        $mform->addElement('text',
+            'config_maxtextlength',
+            get_string('maxtextlength', 'block_forum_feed')
+        );
+        $mform->setDefault('config_maxtextlength', 0);
+        $mform->setType('config_maxtextlength', PARAM_INT);
     }
 }

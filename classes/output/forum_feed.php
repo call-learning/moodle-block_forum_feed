@@ -57,6 +57,10 @@ class forum_feed implements renderable, templatable {
      * @var int
      */
     protected $maxitemcount = 0;
+    /**
+     * @var int
+     */
+    protected $maxtextlength = false;
 
     /**
      * forum_feed constructor.
@@ -67,11 +71,12 @@ class forum_feed implements renderable, templatable {
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public function __construct($forumid, $maxitemcount = 3) {
+    public function __construct($forumid, $maxitemcount = 3, $maxtextlength = false) {
 
         $this->forumid = $forumid;
         $this->maxitemcount = $maxitemcount;
 
+        $this->maxtextlength = $maxtextlength;
     }
 
     /**
@@ -88,8 +93,6 @@ class forum_feed implements renderable, templatable {
         $text = '';
         $forum = $DB->get_record('forum', array('id' => $this->forumid));
         if ($forum) {
-
-
             $modinfo = get_fast_modinfo($forum->course);
             if (!empty($modinfo->instances['forum'][$forum->id])) {
 
@@ -125,7 +128,11 @@ class forum_feed implements renderable, templatable {
                                 $post->userpicture = $renderer->render($userpicture);
                                 $post->userfullname = fullname($discussion);
                                 $post->timestamp = $posttime;
-                                $post->message = format_text($discussion->message, $discussion->messageformat);
+                                $message = content_to_text($discussion->message, $discussion->messageformat);
+                                if ($this->maxtextlength > 0 && (strlen($message) > $this->maxtextlength)) {
+                                    $message = \core_text::substr($message, 0, $this->maxtextlength) . '...';
+                                }
+                                $post->message = $message;
                                 $post->morelink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
                                     array('d' => $discussion->discussion),
                                     "p{$discussion->id}");
