@@ -110,15 +110,22 @@ class forum_feed implements renderable, templatable {
                         /// First work out whether we can post to this group and if so, include a link
                         $groupmode = groups_get_activity_groupmode($cm);
                         $currentgroup = groups_get_activity_group($cm, true);
-                        $sort = forum_get_default_sort_order(false, 'p.modified', 'd', false);
+                        $sort = forum_get_default_sort_order(true, 'p.modified', 'd', false);
                         if ($discussions = forum_get_discussions($cm, $sort, true,
                             -1, $this->maxitemcount,
                             false, -1, 0, FORUM_POSTS_ALL_USER_GROUPS)) {
                             foreach ($discussions as $discussion) {
                                 $post = new \stdClass();
-                                $post->subject = format_string($discussion->name, true, $forum->course);
-                                $post->subjectlink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
-                                    array('d' => $discussion->discussion));
+                                if ($groupmode && $discussion->groupid > 0) {
+                                    $group = groups_get_group($discussion->groupid);
+                                    $post->subject = format_string($group->name, true, $forum->course);
+                                    $post->subjectlink = (new moodle_url($CFG->wwwroot . '/group/overview.php',
+                                        array('id' => $cm->course, 'groupid'=>$group->id)))->out(false);
+                                } else {
+                                    $post->subject = format_string($discussion->name, true, $forum->course);
+                                    $post->subjectlink = (new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
+                                        array('d' => $discussion->discussion)))->out(false);
+                                }
                                 $posttime = $discussion->modified;
                                 if (!empty($CFG->forum_enabletimedposts) && ($discussion->timestart > $posttime)) {
                                     $posttime = $discussion->timestart;
