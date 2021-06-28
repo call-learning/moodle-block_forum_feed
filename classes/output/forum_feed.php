@@ -29,6 +29,7 @@ use context_course;
 use context_helper;
 use context_module;
 use core_course\external\course_summary_exporter;
+use core_user\output\myprofile\category;
 use moodle_url;
 use renderable;
 use renderer_base;
@@ -130,7 +131,8 @@ class forum_feed implements renderable, templatable {
                                 if (!empty($CFG->forum_enabletimedposts) && ($discussion->timestart > $posttime)) {
                                     $posttime = $discussion->timestart;
                                 }
-                                $userpicture = new user_picture($discussion);
+                                $user = \core_user::get_user($discussion->userid);
+                                $userpicture = new user_picture($user);
                                 $userpicture->size = 50;
                                 $post->userpicture = $renderer->render($userpicture);
                                 $post->userfullname = fullname($discussion);
