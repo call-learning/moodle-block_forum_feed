@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 use context_course;
 use context_helper;
 use context_module;
+use context_system;
 use core_course\external\course_summary_exporter;
 use core_user\output\myprofile\category;
 use moodle_url;
@@ -76,7 +77,6 @@ class forum_feed implements renderable, templatable {
 
         $this->forumid = $forumid;
         $this->maxitemcount = $maxitemcount;
-
         $this->maxtextlength = $maxtextlength;
     }
 
@@ -157,5 +157,28 @@ class forum_feed implements renderable, templatable {
             'posts' => array_values($forumposts),
         ];
         return $exportedvalue;
+    }
+
+    /**
+     * Is forum visible to user ?
+     *
+     * @param $forumid
+     * @return bool
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public static function is_forum_user_visible($forumid) {
+        global $DB;
+        $forum = $DB->get_record('forum', array('id' => $forumid));
+        if ($forum) {
+            $modinfo = get_fast_modinfo($forum->course);
+            if (!empty($modinfo->instances['forum'][$forum->id])) {
+                $cm = $modinfo->instances['forum'][$forum->id];
+                // Check if visible.
+                return  has_capability('moodle/site:config', context_system::instance())
+                || is_enrolled(context_course::instance($forum->course)) && $cm->uservisible;
+            }
+        }
+        return false;
     }
 }

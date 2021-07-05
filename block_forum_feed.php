@@ -63,12 +63,15 @@ class block_forum_feed extends block_base {
             $this->content = new stdClass();
             $this->content->footer = '';
             $renderer = $this->page->get_renderer('core');
-            $this->content->text = $renderer->render(
-                new forum_feed(
-                    $this->config->forumid,
-                    $this->config->maxfeed,
-                    $this->config->maxtextlength
-                ));
+            // Check if user is registered into the forum itself before displaying anything.
+            if (forum_feed::is_forum_user_visible($this->config->forumid)) {
+                $this->content->text = $renderer->render(
+                    new forum_feed(
+                        $this->config->forumid,
+                        $this->config->maxfeed,
+                        $this->config->maxtextlength
+                    ));
+            }
         }
         return $this->content;
     }
