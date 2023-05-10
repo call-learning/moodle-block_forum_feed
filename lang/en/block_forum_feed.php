@@ -32,3 +32,5 @@ $string['maxtextlength'] = 'Max text length';
 $string['forumid'] = 'Forum Identifier';
 $string['in'] = 'in';
 $string['more'] = 'More...';
+$string['forum_feed:myaddinstance'] = 'Add Forum Feed instance to the dashboard';
+$string['forum_feed:addinstance'] = 'Add Forum Feed instance';
