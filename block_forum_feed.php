@@ -48,7 +48,6 @@ class block_forum_feed extends block_base {
      */
     public function get_content() {
 
-
         if ($this->content !== null) {
             return $this->content;
         }
@@ -106,6 +105,6 @@ class block_forum_feed extends block_base {
      * @return string[] Array of pages and permissions.
      */
     public function applicable_formats() {
-        return array('my'=>true);
+        return ['my' => true];
     }
 }

@@ -13,17 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Block forum_feed is defined here.
- *
- * @package     block_forum_feed
- * @copyright   2021 Laurent David <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace block_forum_feed\output;
-defined('MOODLE_INTERNAL') || die();
 
 use context_course;
 use context_helper;
@@ -70,6 +60,7 @@ class forum_feed implements renderable, templatable {
      *
      * @param int $forumid
      * @param int $maxitemcount
+     * @param int|bool $maxtextlength
      * @throws \coding_exception
      * @throws \dml_exception
      */
@@ -92,11 +83,10 @@ class forum_feed implements renderable, templatable {
         require_once($CFG->dirroot . '/mod/forum/lib.php');   // We'll need this.
         $forumposts = [];
         $text = '';
-        $forum = $DB->get_record('forum', array('id' => $this->forumid));
+        $forum = $DB->get_record('forum', ['id' => $this->forumid]);
         if ($forum) {
             $modinfo = get_fast_modinfo($forum->course);
             if (!empty($modinfo->instances['forum'][$forum->id])) {
-
 
                 $cm = $modinfo->instances['forum'][$forum->id];
 
@@ -105,10 +95,10 @@ class forum_feed implements renderable, templatable {
 
                     $context = context_module::instance($cm->id);
 
-                    /// User must have perms to view discussions in that forum
+                    // User must have perms to view discussions in that forum.
                     if (has_capability('mod/forum:viewdiscussion', $context)) {
 
-                        /// First work out whether we can post to this group and if so, include a link
+                        // First work out whether we can post to this group and if so, include a link.
                         $groupmode = groups_get_activity_groupmode($cm);
                         $currentgroup = groups_get_activity_group($cm, true);
                         $sort = forum_get_default_sort_order(true, 'p.modified', 'd', false);
@@ -121,11 +111,11 @@ class forum_feed implements renderable, templatable {
                                     $group = groups_get_group($discussion->groupid);
                                     $post->subject = format_string($group->name, true, $forum->course);
                                     $post->subjectlink = (new moodle_url($CFG->wwwroot . '/group/overview.php',
-                                        array('id' => $cm->course, 'groupid'=>$group->id)))->out(false);
+                                        ['id' => $cm->course, 'groupid' => $group->id]))->out(false);
                                 } else {
                                     $post->subject = format_string($discussion->name, true, $forum->course);
                                     $post->subjectlink = (new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
-                                        array('d' => $discussion->discussion)))->out(false);
+                                        ['d' => $discussion->discussion]))->out(false);
                                 }
                                 $posttime = $discussion->modified;
                                 if (!empty($CFG->forum_enabletimedposts) && ($discussion->timestart > $posttime)) {
@@ -143,7 +133,7 @@ class forum_feed implements renderable, templatable {
                                 }
                                 $post->message = $message;
                                 $post->morelink = new moodle_url($CFG->wwwroot . '/mod/forum/discuss.php',
-                                    array('d' => $discussion->discussion),
+                                    ['d' => $discussion->discussion],
                                     "p{$discussion->id}");
                                 $forumposts[] = $post;
                             }
@@ -162,14 +152,14 @@ class forum_feed implements renderable, templatable {
     /**
      * Is forum visible to user ?
      *
-     * @param $forumid
+     * @param int $forumid
      * @return bool
      * @throws \dml_exception
      * @throws \moodle_exception
      */
     public static function is_forum_user_visible($forumid) {
         global $DB;
-        $forum = $DB->get_record('forum', array('id' => $forumid));
+        $forum = $DB->get_record('forum', ['id' => $forumid]);
         if ($forum) {
             $modinfo = get_fast_modinfo($forum->course);
             if (!empty($modinfo->instances['forum'][$forum->id])) {

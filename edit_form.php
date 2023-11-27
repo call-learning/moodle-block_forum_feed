@@ -13,15 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
-/**
- * Form for editing forum_feed block instances.
- *
- * @package     block_forum_feed
- * @copyright   2021 Laurent David <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 /**
  * Form for editing block_forum_feed block instances.
  *
@@ -32,6 +23,10 @@
 class block_forum_feed_edit_form extends block_edit_form {
 
     /**
+     * Specific definition for the form
+     *
+     * @param MoodleQuickForm $mform
+     *
      * Extends the configuration form for block_forum_feed.
      */
     protected function specific_definition($mform) {
@@ -51,7 +46,7 @@ class block_forum_feed_edit_form extends block_edit_form {
         );
         $mform->setDefault('config_maxfeed', 3);
         $mform->setType('config_maxfeed', PARAM_INT);
-        $sql = "SELECT f.id, ". $DB->sql_concat_join("'/'",['f.name', 'c.fullname'])
+        $sql = "SELECT f.id, ". $DB->sql_concat_join("'/'", ['f.name', 'c.fullname'])
             . " FROM {forum} f LEFT JOIN {course} c ON f.course = c.id";
         $forumlist = $DB->get_records_sql_menu($sql);
         $mform->addElement('searchableselector', 'config_forumid',
