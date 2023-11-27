@@ -1,8 +1,8 @@
 # Forum Feed #
 
-TODO Describe the plugin shortly here.
+[![Moodle Plugin CI](https://github.com/call-learning/moodle-block_forum_feed/actions/workflows/main.yml/badge.svg)](https://github.com/call-learning/moodle-block_forum_feed/actions/workflows/main.yml)
 
-TODO Provide more detailed description here.
+Add a feed of forum posts to a block that can be integrated on the dashboard.
 
 ## License ##
 
